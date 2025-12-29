@@ -113,8 +113,25 @@ class App {
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          Export PDF
+          PDF
         `;
+      }
+    });
+
+    // Export to Figma button - copies JSON to clipboard
+    document.getElementById('export-figma-btn')?.addEventListener('click', async () => {
+      const mockup = store.getMockup();
+      if (!mockup || !mockup.screens?.length) {
+        this.showNotification('Generate a mockup first', 'warning');
+        return;
+      }
+
+      try {
+        const json = JSON.stringify(mockup, null, 2);
+        await navigator.clipboard.writeText(json);
+        this.showNotification('JSON copied! Paste in Figma Plugin to create frames.', 'success');
+      } catch (err) {
+        this.showNotification('Failed to copy: ' + err.message, 'error');
       }
     });
 
@@ -132,6 +149,12 @@ class App {
     const textarea = document.getElementById('initial-prompt');
     const generateBtn = document.getElementById('generate-btn');
     const quickPromptBtns = document.querySelectorAll('.quick-prompt-btn');
+    const styleBtns = document.querySelectorAll('.style-btn');
+    const appTypeSelect = document.getElementById('app-type-select');
+    const modeSelect = document.getElementById('generation-mode');
+
+    // Track selected style
+    let selectedStyle = 'modern';
 
     // Enable button when text is entered
     textarea.addEventListener('input', () => {
@@ -147,7 +170,16 @@ class App {
       });
     });
 
-    // Generate mockup
+    // Style preset buttons
+    styleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        styleBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedStyle = btn.dataset.style;
+      });
+    });
+
+    // Generate mockup - TWO STEP PROCESS
     generateBtn.addEventListener('click', async () => {
       if (!nimApi.hasApiKey()) {
         this.showSettingsModal();
@@ -157,20 +189,56 @@ class App {
       const prompt = textarea.value.trim();
       if (!prompt) return;
 
+      // Get generation options
+      const options = {
+        style: selectedStyle,
+        appType: appTypeSelect?.value || 'consumer',
+        mode: modeSelect?.value || 'full'
+      };
+
       try {
-        this.setGenerating(true);
+        this.setGenerating(true, 'Analyzing your idea...');
 
-        const response = await nimApi.generateMockup(prompt, (chunk, full) => {
-          // Could show streaming progress here
-        });
+        // STEP 1: Analyze product to get structured understanding
+        const analysisResponse = await nimApi.analyzeProduct(prompt, options);
+        const productSpec = nimApi.parseJsonResponse(analysisResponse);
 
-        const mockup = nimApi.parseJsonResponse(response);
+        // Apply style from options
+        productSpec.style = productSpec.style || {};
+        productSpec.style.tone = options.style;
+        productSpec.style.industry = options.appType;
+
+        console.log('Product Understanding:', productSpec);
+
+        // Store product spec for future reference
+        store.setProductSpec(productSpec);
+
+        this.setGenerating(true, 'Designing screens...');
+
+        // STEP 2: Generate mockup from structured spec
+        const mockupResponse = await nimApi.generateMockupFromSpec(productSpec);
+        const mockup = nimApi.parseJsonResponse(mockupResponse);
+
+        // Use app name from product spec if mockup doesn't have one
+        if (!mockup.appName && productSpec.appName) {
+          mockup.appName = productSpec.appName;
+        }
 
         // Assign IDs if missing
         this.ensureMockupIds(mockup);
 
         store.setMockup(mockup);
-        store.addChatMessage('assistant', `Great! I've created ${mockup.screens?.length || 0} screens for your ${mockup.appName || 'app'}. Select elements or type to make changes.`);
+
+        // Create summary message with product understanding
+        const screenCount = mockup.screens?.length || 0;
+        const flowCount = productSpec.userFlows?.length || 0;
+        store.addChatMessage('assistant', `🎉 Created **${productSpec.appName || 'your app'}**!
+
+**Target:** ${productSpec.persona?.who || 'Users'}
+**Screens:** ${screenCount} screens designed
+**Flows:** ${flowCount} user journeys mapped
+
+Select elements or describe changes to refine the design.`);
 
         // Close modal
         modal.classList.add('hidden');
@@ -187,7 +255,7 @@ class App {
     });
   }
 
-  setGenerating(isGenerating) {
+  setGenerating(isGenerating, statusMessage = 'Generating...') {
     const btn = document.getElementById('generate-btn');
     const btnText = btn.querySelector('.btn-text');
     const btnLoading = btn.querySelector('.btn-loading');
@@ -195,6 +263,12 @@ class App {
     btn.disabled = isGenerating;
     btnText.classList.toggle('hidden', isGenerating);
     btnLoading.classList.toggle('hidden', !isGenerating);
+
+    // Update loading text if provided
+    if (isGenerating && statusMessage) {
+      const loadingText = btnLoading.querySelector('span:not(.spinner)');
+      if (loadingText) loadingText.textContent = statusMessage;
+    }
 
     store.setGenerating(isGenerating);
   }

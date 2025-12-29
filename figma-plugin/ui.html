@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>AI Prototyper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 13px;
+            color: #fff;
+            background: #1e1e1e;
+            padding: 16px;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .description {
+            color: #999;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 11px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #8B5CF6;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            border: none;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #3d3d3d;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #8B5CF6;
+            display: none;
+        }
+
+        .status.visible {
+            display: block;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .logo span {
+            font-size: 14px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="logo">
+        <svg viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
+            <path d="M10 16L14 12L18 16L22 12" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            <path d="M10 20L14 16L18 20L22 16" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            <defs>
+                <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
+                    <stop stop-color="#8B5CF6" />
+                    <stop offset="1" stop-color="#06B6D4" />
+                </linearGradient>
+            </defs>
+        </svg>
+        <span>AI Prototyper</span>
+    </div>
+
+    <h2>Import Mockup</h2>
+    <p class="description">
+        Paste the UI Spec JSON from AI Prototyper to create Figma frames with auto-layout.
+    </p>
+
+    <div class="section">
+        <label>UI Spec JSON</label>
+        <textarea id="spec-input" placeholder='Paste your mockup JSON here...
+
+Example:
+{
+  "appName": "My App",
+  "screens": [
+    {
+      "name": "Home",
+      "elements": [
+        { "type": "text", "content": "Welcome", "style": "heading" }
+      ]
+    }
+  ]
+}'></textarea>
+    </div>
+
+    <div class="buttons">
+        <button class="btn-secondary" id="cancel-btn">Cancel</button>
+        <button class="btn-primary" id="create-btn">Create Mockup</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <script>
+        const specInput = document.getElementById('spec-input');
+        const createBtn = document.getElementById('create-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const statusEl = document.getElementById('status');
+
+        function showStatus(message, isError = false) {
+            statusEl.textContent = message;
+            statusEl.classList.add('visible');
+            statusEl.classList.toggle('error', isError);
+        }
+
+        function hideStatus() {
+            statusEl.classList.remove('visible');
+        }
+
+        createBtn.addEventListener('click', () => {
+            const specText = specInput.value.trim();
+
+            if (!specText) {
+                showStatus('Please paste the UI Spec JSON', true);
+                return;
+            }
+
+            try {
+                const spec = JSON.parse(specText);
+
+                if (!spec.screens || spec.screens.length === 0) {
+                    showStatus('Invalid spec: no screens found', true);
+                    return;
+                }
+
+                createBtn.disabled = true;
+                showStatus('Creating mockup...');
+
+                parent.postMessage({ pluginMessage: { type: 'create-mockup', spec } }, '*');
+
+                setTimeout(() => {
+                    createBtn.disabled = false;
+                    hideStatus();
+                }, 2000);
+
+            } catch (e) {
+                showStatus('Invalid JSON: ' + e.message, true);
+            }
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+        });
+    </script>
+</body>
+
+</html>

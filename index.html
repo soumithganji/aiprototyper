@@ -1,283 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Prototyper - Mobile App Mockup Generator</title>
-    <meta name="description" content="Generate mobile app mockups with AI. Create Figma-style designs from text prompts using NVIDIA NIM." />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app">
-      <!-- Loading State -->
-      <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-          <div class="loading-spinner"></div>
-          <h2>AI Prototyper</h2>
-          <p>Initializing...</p>
-        </div>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Prototyper - Mobile App Mockup Generator</title>
+  <meta name="description"
+    content="Generate mobile app mockups with AI. Create Figma-style designs from text prompts using NVIDIA NIM." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+    <!-- Loading State -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h2>AI Prototyper</h2>
+        <p>Initializing...</p>
       </div>
+    </div>
 
-      <!-- Main Application -->
-      <div id="main-app" class="main-app hidden">
-        <!-- Header Toolbar -->
-        <header class="toolbar">
-          <div class="toolbar-left">
-            <div class="logo">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <rect width="32" height="32" rx="8" fill="url(#logo-gradient)"/>
-                <path d="M10 16L14 12L18 16L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M10 20L14 16L18 20L22 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <defs>
-                  <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
-                    <stop stop-color="#8B5CF6"/>
-                    <stop offset="1" stop-color="#06B6D4"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <span>AI Prototyper</span>
-            </div>
+    <!-- Main Application -->
+    <div id="main-app" class="main-app hidden">
+      <!-- Header Toolbar -->
+      <header class="toolbar">
+        <div class="toolbar-left">
+          <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
+              <path d="M10 16L14 12L18 16L22 12" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M10 20L14 16L18 20L22 16" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <defs>
+                <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
+                  <stop stop-color="#8B5CF6" />
+                  <stop offset="1" stop-color="#06B6D4" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span>AI Prototyper</span>
           </div>
+        </div>
 
-          <div class="toolbar-center">
-            <div class="tool-group">
-              <button id="pan-tool" class="tool-btn active" title="Pan (H)">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-                  <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-                  <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-                  <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
-                </svg>
-              </button>
-              <button id="select-tool" class="tool-btn" title="Selection (V)">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <circle cx="12" cy="12" r="4"/>
-                </svg>
-              </button>
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="zoom-controls">
-              <button id="zoom-out" class="icon-btn" title="Zoom Out">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"/>
-                  <path d="M21 21l-4.35-4.35"/>
-                  <path d="M8 11h6"/>
-                </svg>
-              </button>
-              <span id="zoom-level" class="zoom-level">100%</span>
-              <button id="zoom-in" class="icon-btn" title="Zoom In">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"/>
-                  <path d="M21 21l-4.35-4.35"/>
-                  <path d="M11 8v6"/>
-                  <path d="M8 11h6"/>
-                </svg>
-              </button>
-              <button id="zoom-fit" class="icon-btn" title="Fit View">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M15 3h6v6"/>
-                  <path d="M9 21H3v-6"/>
-                  <path d="M21 3l-7 7"/>
-                  <path d="M3 21l7-7"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="toolbar-right">
-            <button id="settings-btn" class="icon-btn" title="Settings">
+        <div class="toolbar-center">
+          <div class="tool-group">
+            <button id="pan-tool" class="tool-btn active" title="Pan (H)">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                <path
+                  d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
               </svg>
             </button>
-            <button id="export-btn" class="primary-btn">
+            <button id="select-tool" class="tool-btn" title="Selection (V)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="4" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="zoom-controls">
+            <button id="zoom-out" class="icon-btn" title="Zoom Out">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+                <path d="M8 11h6" />
               </svg>
-              Export PDF
+            </button>
+            <span id="zoom-level" class="zoom-level">100%</span>
+            <button id="zoom-in" class="icon-btn" title="Zoom In">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+                <path d="M11 8v6" />
+                <path d="M8 11h6" />
+              </svg>
+            </button>
+            <button id="zoom-fit" class="icon-btn" title="Fit View">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h6v6" />
+                <path d="M9 21H3v-6" />
+                <path d="M21 3l-7 7" />
+                <path d="M3 21l7-7" />
+              </svg>
             </button>
           </div>
-        </header>
+        </div>
 
-        <!-- Main Content Area -->
-        <div class="content-area">
-          <!-- Canvas Container -->
-          <div id="canvas-container" class="canvas-container">
-            <div id="canvas" class="canvas">
-              <!-- Screens will be rendered here -->
-            </div>
-            
-            <!-- Selection overlay for circle selection -->
-            <svg id="selection-overlay" class="selection-overlay"></svg>
+        <div class="toolbar-right">
+          <button id="settings-btn" class="icon-btn" title="Settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+          <button id="export-figma-btn" class="primary-btn" title="Copy JSON for Figma Plugin">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z" />
+              <path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z" />
+              <path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z" />
+              <path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z" />
+              <path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z" />
+            </svg>
+            Figma
+          </button>
+          <button id="export-btn" class="primary-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            PDF
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <div class="content-area">
+        <!-- Canvas Container -->
+        <div id="canvas-container" class="canvas-container">
+          <div id="canvas" class="canvas">
+            <!-- Screens will be rendered here -->
           </div>
 
-          <!-- Chat Panel -->
-          <aside id="chat-panel" class="chat-panel">
-            <div class="chat-header">
-              <h3>AI Assistant</h3>
-              <button id="toggle-chat" class="icon-btn small">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="15 18 9 12 15 6"/>
+          <!-- Selection overlay for circle selection -->
+          <svg id="selection-overlay" class="selection-overlay"></svg>
+        </div>
+
+        <!-- Chat Panel -->
+        <aside id="chat-panel" class="chat-panel">
+          <div class="chat-header">
+            <h3>AI Assistant</h3>
+            <button id="toggle-chat" class="icon-btn small">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          </div>
+
+          <div id="chat-messages" class="chat-messages">
+            <div class="chat-welcome">
+              <div class="welcome-icon">✨</div>
+              <h4>Welcome to AI Prototyper</h4>
+              <p>Describe your mobile app idea or select elements on the canvas to modify them.</p>
+            </div>
+          </div>
+
+          <div class="chat-input-container">
+            <div id="selection-context" class="selection-context hidden">
+              <span class="context-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+                <span id="selection-count">0 elements</span> selected
+              </span>
+              <button id="clear-selection" class="text-btn">Clear</button>
+            </div>
+            <div class="chat-input-wrapper">
+              <textarea id="chat-input" placeholder="Describe your app or changes..." rows="1"></textarea>
+              <button id="send-btn" class="send-btn" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
                 </svg>
               </button>
             </div>
-            
-            <div id="chat-messages" class="chat-messages">
-              <div class="chat-welcome">
-                <div class="welcome-icon">✨</div>
-                <h4>Welcome to AI Prototyper</h4>
-                <p>Describe your mobile app idea or select elements on the canvas to modify them.</p>
-              </div>
-            </div>
-            
-            <div class="chat-input-container">
-              <div id="selection-context" class="selection-context hidden">
-                <span class="context-badge">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                  <span id="selection-count">0 elements</span> selected
-                </span>
-                <button id="clear-selection" class="text-btn">Clear</button>
-              </div>
-              <div class="chat-input-wrapper">
-                <textarea 
-                  id="chat-input" 
-                  placeholder="Describe your app or changes..."
-                  rows="1"
-                ></textarea>
-                <button id="send-btn" class="send-btn" disabled>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="22" y1="2" x2="11" y2="13"/>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </aside>
-        </div>
+          </div>
+        </aside>
       </div>
+    </div>
 
-      <!-- Initial Prompt Modal -->
-      <div id="prompt-modal" class="modal">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content prompt-modal-content">
-          <div class="modal-header">
-            <h2>Create Your App</h2>
-            <p>Describe your mobile app idea and AI will generate mockup screens for you.</p>
-          </div>
-          
-          <div class="modal-body">
-            <textarea 
-              id="initial-prompt" 
-              class="prompt-textarea"
-              placeholder="Example: Create a food delivery app with a home screen showing restaurants, a restaurant detail page with menu items, a cart screen, and a checkout flow..."
-              rows="5"
-            ></textarea>
-            
-            <div class="quick-prompts">
-              <span class="quick-prompts-label">Try a quick example:</span>
-              <div class="quick-prompts-grid">
-                <button class="quick-prompt-btn" data-prompt="A social media app with a feed, profile page, and messaging feature">
-                  📱 Social Media
-                </button>
-                <button class="quick-prompt-btn" data-prompt="A fitness tracking app with workout plans, progress charts, and achievements">
-                  💪 Fitness Tracker
-                </button>
-                <button class="quick-prompt-btn" data-prompt="An e-commerce app with product listings, product details, cart, and checkout">
-                  🛒 E-Commerce
-                </button>
-                <button class="quick-prompt-btn" data-prompt="A task management app with project boards, task lists, and calendar view">
-                  ✅ Task Manager
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div class="modal-footer">
-            <button id="generate-btn" class="generate-btn" disabled>
-              <span class="btn-text">Generate Mockups</span>
-              <span class="btn-loading hidden">
-                <span class="spinner"></span>
-                Generating...
-              </span>
-            </button>
-          </div>
+    <!-- Initial Prompt Modal -->
+    <div id="prompt-modal" class="modal">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content prompt-modal-content">
+        <div class="modal-header">
+          <h2>Create Your App</h2>
+          <p>Describe your mobile app idea and AI will generate mockup screens for you.</p>
         </div>
-      </div>
 
-      <!-- Settings Modal -->
-      <div id="settings-modal" class="modal hidden">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content settings-modal-content">
-          <div class="modal-header">
-            <h2>Settings</h2>
-            <button id="close-settings" class="icon-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="modal-body">
-            <div class="settings-section">
-              <label class="settings-label">
-                NVIDIA NIM API Key
-                <span class="required">*</span>
-              </label>
-              <div class="api-key-input-wrapper">
-                <input 
-                  type="password" 
-                  id="api-key-input" 
-                  class="settings-input"
-                  placeholder="nvapi-..."
-                />
-                <button id="toggle-api-key" class="icon-btn">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-              </div>
-              <p class="settings-hint">
-                Get your API key from <a href="https://build.nvidia.com" target="_blank">build.nvidia.com</a>
-              </p>
+        <div class="modal-body">
+          <textarea id="initial-prompt" class="prompt-textarea"
+            placeholder="Example: Create a food delivery app with a home screen showing restaurants, a restaurant detail page with menu items, a cart screen, and a checkout flow..."
+            rows="5"></textarea>
+
+          <div class="quick-prompts">
+            <span class="quick-prompts-label">Try a quick example:</span>
+            <div class="quick-prompts-grid">
+              <button class="quick-prompt-btn"
+                data-prompt="A social media app with a feed, profile page, and messaging feature">
+                📱 Social Media
+              </button>
+              <button class="quick-prompt-btn"
+                data-prompt="A fitness tracking app with workout plans, progress charts, and achievements">
+                💪 Fitness Tracker
+              </button>
+              <button class="quick-prompt-btn"
+                data-prompt="An e-commerce app with product listings, product details, cart, and checkout">
+                🛒 E-Commerce
+              </button>
+              <button class="quick-prompt-btn"
+                data-prompt="A task management app with project boards, task lists, and calendar view">
+                ✅ Task Manager
+              </button>
             </div>
-            
-            <div class="settings-section">
-              <label class="settings-label">Model</label>
-              <select id="model-select" class="settings-select">
-                <option value="meta/llama-3.1-70b-instruct">Llama 3.1 70B (Recommended)</option>
-                <option value="meta/llama-3.1-8b-instruct">Llama 3.1 8B (Faster)</option>
-                <option value="nvidia/nemotron-4-340b-instruct">Nemotron 4 340B (Highest Quality)</option>
+          </div>
+
+          <!-- Style & Type Controls -->
+          <div class="generation-options">
+            <div class="option-group">
+              <label class="option-label">Style</label>
+              <div class="style-presets">
+                <button class="style-btn" data-style="minimal">Minimal</button>
+                <button class="style-btn active" data-style="modern">Modern</button>
+                <button class="style-btn" data-style="bold">Bold</button>
+                <button class="style-btn" data-style="premium">Premium</button>
+              </div>
+            </div>
+
+            <div class="option-group">
+              <label class="option-label">App Type</label>
+              <select id="app-type-select" class="option-select">
+                <option value="consumer">Consumer App</option>
+                <option value="b2b-saas">B2B SaaS</option>
+                <option value="e-commerce">E-Commerce</option>
+                <option value="social">Social Media</option>
+                <option value="fintech">Fintech</option>
+                <option value="healthcare">Healthcare</option>
               </select>
             </div>
-            
-            <div class="settings-section">
-              <label class="settings-label">Device Frame</label>
-              <select id="device-select" class="settings-select">
-                <option value="iphone-15">iPhone 15 Pro</option>
-                <option value="iphone-se">iPhone SE</option>
-                <option value="pixel-8">Pixel 8</option>
-                <option value="galaxy-s24">Galaxy S24</option>
+
+            <div class="option-group">
+              <label class="option-label">Mode</label>
+              <select id="generation-mode" class="option-select">
+                <option value="full">Full App (6-8 screens)</option>
+                <option value="mvp">MVP (4-5 screens)</option>
+                <option value="pitch">Investor Pitch (3 screens)</option>
               </select>
             </div>
           </div>
-          
-          <div class="modal-footer">
-            <button id="save-settings" class="primary-btn">Save Settings</button>
-          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="generate-btn" class="generate-btn" disabled>
+            <span class="btn-text">Generate Mockups</span>
+            <span class="btn-loading hidden">
+              <span class="spinner"></span>
+              Generating...
+            </span>
+          </button>
         </div>
       </div>
     </div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content settings-modal-content">
+        <div class="modal-header">
+          <h2>Settings</h2>
+          <button id="close-settings" class="icon-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="settings-section">
+            <label class="settings-label">
+              NVIDIA NIM API Key
+              <span class="required">*</span>
+            </label>
+            <div class="api-key-input-wrapper">
+              <input type="password" id="api-key-input" class="settings-input" placeholder="nvapi-..." />
+              <button id="toggle-api-key" class="icon-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+            <p class="settings-hint">
+              Get your API key from <a href="https://build.nvidia.com" target="_blank">build.nvidia.com</a>
+            </p>
+          </div>
+
+          <div class="settings-section">
+            <label class="settings-label">Model</label>
+            <select id="model-select" class="settings-select">
+              <option value="meta/llama-3.1-70b-instruct">Llama 3.1 70B (Recommended)</option>
+              <option value="meta/llama-3.1-8b-instruct">Llama 3.1 8B (Faster)</option>
+              <option value="nvidia/nemotron-4-340b-instruct">Nemotron 4 340B (Highest Quality)</option>
+            </select>
+          </div>
+
+          <div class="settings-section">
+            <label class="settings-label">Device Frame</label>
+            <select id="device-select" class="settings-select">
+              <option value="iphone-15">iPhone 15 Pro</option>
+              <option value="iphone-se">iPhone SE</option>
+              <option value="pixel-8">Pixel 8</option>
+              <option value="galaxy-s24">Galaxy S24</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="save-settings" class="primary-btn">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
 </html>

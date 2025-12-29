@@ -73,6 +73,15 @@ class Store {
         return this.state.mockup;
     }
 
+    // Product spec from analysis step
+    setProductSpec(spec) {
+        this.setState({ productSpec: spec });
+    }
+
+    getProductSpec() {
+        return this.state.productSpec;
+    }
+
     updateScreen(screenId, updates) {
         if (!this.state.mockup) return;
 
