@@ -201,7 +201,10 @@ class App {
         this.setGenerating(true, 'Analyzing your idea...');
 
         // STEP 1: Analyze product to get structured understanding
-        const analysisResponse = await nimApi.analyzeProduct(prompt, options);
+        // We pass a callback to show we are alive
+        const analysisResponse = await nimApi.analyzeProduct(prompt, options, (chunk) => {
+          this.setGenerating(true, 'Analyzing intent ' + (chunk.length > 5 ? '...' : chunk));
+        });
         const productSpec = nimApi.parseJsonResponse(analysisResponse);
 
         // Apply style from options
@@ -214,38 +217,64 @@ class App {
         // Store product spec for future reference
         store.setProductSpec(productSpec);
 
-        this.setGenerating(true, 'Designing screens...');
+        this.setGenerating(true, 'Initializing skeletal structure...');
 
-        // STEP 2: Generate mockup from structured spec
-        const mockupResponse = await nimApi.generateMockupFromSpec(productSpec);
-        const mockup = nimApi.parseJsonResponse(mockupResponse);
+        // STEP 2 (Progressive): Create immediate skeleton mockup
+        const skeletonMockup = this.createSkeletonMockup(productSpec);
+        this.ensureMockupIds(skeletonMockup);
+        store.setMockup(skeletonMockup);
 
-        // Use app name from product spec if mockup doesn't have one
-        if (!mockup.appName && productSpec.appName) {
-          mockup.appName = productSpec.appName;
+        // Render immediate skeleton view
+        setTimeout(() => this.canvas.fitView(), 100);
+
+        // STEP 3: Progressively fill in details
+        const screens = skeletonMockup.screens;
+        let completedScreens = 0;
+
+        // Process screens in parallel (or sequential if needed, but parallel is faster)
+        // We do sequential to avoid rate limits if any, but parallel feels faster. Let's do batches of 2.
+        const batchSize = 2;
+
+        for (let i = 0; i < screens.length; i += batchSize) {
+          const batch = screens.slice(i, i + batchSize);
+
+          await Promise.all(batch.map(async (screen) => {
+            try {
+              this.setGenerating(true, `Designing ${screen.name}...`);
+
+              const response = await nimApi.generateScreenDetails(screen, productSpec, (chunk) => {
+                // Optional: update UI with token output if desired, but might be too noisy for parallel
+              });
+
+              const details = nimApi.parseJsonResponse(response);
+              if (details && details.elements) {
+                // Update store with new elements for this screen
+                store.updateScreen(screen.id, { elements: details.elements });
+              }
+
+              completedScreens++;
+            } catch (err) {
+              console.error(`Failed to generate details for ${screen.name}:`, err);
+            }
+          }));
+
+          this.setGenerating(true, `Completed ${completedScreens} of ${screens.length} screens...`);
         }
 
-        // Assign IDs if missing
-        this.ensureMockupIds(mockup);
+        // Finalize
+        const finalMockup = store.getMockup();
+        const elementCount = finalMockup.screens?.reduce((sum, s) => sum + (s.elements?.length || 0), 0) || 0;
 
-        store.setMockup(mockup);
-
-        // Create summary message with product understanding
-        const screenCount = mockup.screens?.length || 0;
-        const flowCount = productSpec.userFlows?.length || 0;
         store.addChatMessage('assistant', `🎉 Created **${productSpec.appName || 'your app'}**!
-
+        
 **Target:** ${productSpec.persona?.who || 'Users'}
-**Screens:** ${screenCount} screens designed
-**Flows:** ${flowCount} user journeys mapped
+**Screens:** ${completedScreens} screens designed
+**Flows:** ${finalMockup.flows?.length || 0} user journeys mapped
 
 Select elements or describe changes to refine the design.`);
 
         // Close modal
         modal.classList.add('hidden');
-
-        // Fit view to show all screens
-        setTimeout(() => this.canvas.fitView(), 100);
 
       } catch (err) {
         console.error('Generation error:', err);
@@ -254,6 +283,44 @@ Select elements or describe changes to refine the design.`);
         this.setGenerating(false);
       }
     });
+  }
+
+  createSkeletonMockup(productSpec) {
+    const screens = productSpec.screens.map((s, i) => ({
+      id: s.id || `screen-${i + 1}`,
+      name: s.name,
+      position: {
+        x: 100 + (i % 3) * 400,
+        y: 100 + Math.floor(i / 3) * 700
+      },
+      elements: [
+        // Skeleton placeholder elements
+        { type: 'header', title: s.name, showBack: i > 0 },
+        {
+          type: 'box', variant: 'column', children: [
+            { type: 'text', content: 'Generating...', style: 'muted' },
+            { type: 'spacer', size: 'large' }
+          ]
+        }
+      ]
+    }));
+
+    // Generate basic flows based on order
+    const flows = [];
+    for (let i = 0; i < screens.length - 1; i++) {
+      flows.push({
+        from: screens[i].id,
+        to: screens[i + 1].id,
+        label: 'Next',
+        type: 'tap'
+      });
+    }
+
+    return {
+      appName: productSpec.appName,
+      screens: screens,
+      flows: flows
+    };
   }
 
   setGenerating(isGenerating, statusMessage = 'Generating...') {

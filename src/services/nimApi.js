@@ -260,7 +260,9 @@ REQUIREMENTS:
       { role: 'user', content: enhancedPrompt }
     ];
 
-    return this._streamChat(messages, onChunk);
+    // Use faster 8B model for analysis to speed up the first step
+    const fastModel = 'meta/llama-3.1-8b-instruct';
+    return this._streamChat(messages, onChunk, fastModel);
   }
 
   /**
@@ -301,6 +303,49 @@ Generate the complete JSON with all ${screenCount} screens now.`;
     ];
 
     return this._streamChat(messages, onChunk);
+  }
+
+  /**
+   * Step 3 (Progressive): Generate details for a single screen based on product spec
+   */
+  async generateScreenDetails(screenSpec, productSpec, onChunk = null) {
+    if (!this.hasApiKey()) {
+      throw new Error('API key is required.');
+    }
+
+    console.log(`Generating details for screen: ${screenSpec.name}`);
+
+    const enhancedPrompt = `Generate UI elements for "${screenSpec.name}" screen in a ${productSpec.appName || 'mobile'} app.
+
+PURPOSE: ${screenSpec.purpose || 'Display content'}
+KEY FEATURES: ${screenSpec.keyElements?.join(', ') || 'content display'}
+
+IMPORTANT: Use REALISTIC, MEANINGFUL content:
+- Real names: "Sarah Johnson", "Mike Chen"
+- Real values: "$24.99", "4.8 ★", "2.5k followers"
+- Real actions: "Start Workout", "View Details", "Add to Cart"
+- Real timestamps: "5 min ago", "Yesterday"
+
+Return ONLY valid JSON:
+{
+  "elements": [
+    { "type": "header", "title": "${screenSpec.name}", "showBack": ${screenSpec.name !== 'Home' && screenSpec.name !== 'Dashboard'} },
+    { "type": "listItem", "title": "Example Item", "subtitle": "Description here", "trailingText": "$9.99" },
+    { "type": "card", "title": "Featured", "subtitle": "4.5 ★ • Popular", "action": "View" },
+    { "type": "navbar", "items": ["Home", "Search", "Profile"], "active": 0 }
+  ]
+}
+
+Generate 10-12 elements with realistic content appropriate for a "${screenSpec.name}" screen.`;
+
+    const messages = [
+      { role: 'system', content: 'You are a professional UI designer. Generate realistic mobile app screens with meaningful content. Return only valid JSON.' },
+      { role: 'user', content: enhancedPrompt }
+    ];
+
+    // Use faster 8B model for screen details
+    const fastModel = 'meta/llama-3.1-8b-instruct';
+    return this._streamChat(messages, onChunk, fastModel);
   }
 
   /**
@@ -358,30 +403,39 @@ Please provide the updated mockup JSON.`
 
     const messages = [
       {
-        role: 'system', content: `You are editing a mobile app screen. Make ONLY the requested change and keep ALL other elements exactly the same.
+        role: 'system', content: `You are a professional mobile app UI designer editing a screen.
 
-CRITICAL RULES:
-1. You MUST return the complete screen JSON with ALL elements preserved
-2. Only modify the specific thing the user requested
-3. Keep ALL other elements unchanged - copy them exactly as they are
-4. Output ONLY valid JSON - no markdown, no explanations
+IMPORTANT: Generate REALISTIC, CONTEXTUAL content based on the screen name and purpose.
+- For "Home Feed": add feed posts, user avatars, like buttons, timestamps
+- For "Profile": add user info, stats, settings options
+- For "Settings": add toggles, list items for preferences
+- For any screen: use realistic text like "John posted a photo", "$24.99", "5 min ago"
 
-ELEMENT TYPES: text, button, input, image, icon, box, divider, spacer, navbar, header, listItem, card, stat, tabs, toggle
+NEVER use generic labels like "Button" or "Text". Always use meaningful content.
 
-Output format:
-{
-  "name": "Screen Name",
-  "elements": [ ... all elements ... ]
-}` },
+ELEMENT TYPES AND EXAMPLES:
+- header: { "type": "header", "title": "Home", "showBack": false }
+- listItem: { "type": "listItem", "title": "Dark Mode", "subtitle": "Enable dark theme", "trailingText": "On" }
+- card: { "type": "card", "title": "Morning Workout", "subtitle": "45 min • 320 cal", "action": "Start" }
+- stat: { "type": "stat", "value": "1,234", "label": "Followers" }
+- text: { "type": "text", "content": "Welcome back, Sarah!", "style": "heading" }
+- button: { "type": "button", "content": "Get Started", "variant": "primary" }
+- input: { "type": "input", "placeholder": "Search workouts...", "icon": "search" }
+- image: { "type": "image", "size": "medium" }
+- tabs: { "type": "tabs", "items": ["All", "Popular", "Recent"], "active": 0 }
+- navbar: { "type": "navbar", "items": ["Home", "Search", "Profile"], "active": 0 }
+
+Output ONLY valid JSON. No markdown, no explanations.` },
       {
         role: 'user',
-        content: `Here is the current screen JSON. You MUST preserve ALL elements and only modify what I specifically request:
+        content: `Screen: "${screen.name}"
+Current elements: ${screen.elements?.length || 0}
 
 ${JSON.stringify(screen, null, 2)}
 
-MY REQUEST: "${userRequest}"
+REQUEST: "${userRequest}"
 
-Return the complete updated screen JSON. Start with { and end with }.`
+Add contextually appropriate elements for a "${screen.name}" screen. Return complete screen JSON.`
       }
     ];
 
@@ -544,7 +598,7 @@ Return the complete updated screen JSON with the "name" and full "elements" arra
     return context;
   }
 
-  async _streamChat(messages, onChunk) {
+  async _streamChat(messages, onChunk, modelOverride = null) {
     const response = await fetch(`${NIM_API_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -552,7 +606,7 @@ Return the complete updated screen JSON with the "name" and full "elements" arra
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: this.model,
+        model: modelOverride || this.model,
         messages: messages,
         stream: true,
         max_tokens: 8192,
