@@ -30,7 +30,7 @@
 
 **AI Prototyper** is a powerful web-based tool that generates professional mobile app mockups from natural language descriptions. Powered by **NVIDIA NIM** (Llama 3.1 models), it enables designers, developers, and product managers to rapidly prototype app concepts without any design skills.
 
-> 💡 Simply describe your app idea—like *"a fitness tracking app with workout plans and progress charts"*—and watch as AI Prototyper generates complete, interactive wireframes with multiple screens, navigation flows, and realistic UI components.
+> Simply describe your app idea—like *"a fitness tracking app with workout plans and progress charts"*—and watch as AI Prototyper generates complete, interactive wireframes with multiple screens, navigation flows, and realistic UI components.
 
 ### Key Capabilities
 
