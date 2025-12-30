@@ -1,7 +1,19 @@
 # AI Prototyper
 
 <p align="center">
-  <strong>Transform your app ideas into professional mobile mockups in seconds using AI</strong>
+  <strong> Transform your app ideas into professional mobile mockups in seconds using AI</strong>
+</p>
+
+<p align="center">
+  <a href="#preview">
+    <img src="https://img.shields.io/badge/Live-Preview-8B5CF6?style=for-the-badge" alt="Preview"/>
+  </a>
+  <a href="https://build.nvidia.com">
+    <img src="https://img.shields.io/badge/Powered_by-NVIDIA_NIM-76B900?style=for-the-badge&logo=nvidia" alt="NVIDIA NIM"/>
+  </a>
+  <a href="#quick-start">
+    <img src="https://img.shields.io/badge/Get-Started-06B6D4?style=for-the-badge" alt="Get Started"/>
+  </a>
 </p>
 
 <p align="center">
@@ -16,18 +28,20 @@
 
 ## Overview
 
-AI Prototyper is a powerful web-based tool that generates professional mobile app mockups from natural language descriptions. Powered by **NVIDIA NIM** (Llama 3.1 models), it enables designers, developers, and product managers to rapidly prototype app concepts without any design skills.
+**AI Prototyper** is a powerful web-based tool that generates professional mobile app mockups from natural language descriptions. Powered by **NVIDIA NIM** (Llama 3.1 models), it enables designers, developers, and product managers to rapidly prototype app concepts without any design skills.
 
-Simply describe your app idea—like "a fitness tracking app with workout plans and progress charts"—and watch as AI Prototyper generates complete, interactive wireframes with multiple screens, navigation flows, and realistic UI components.
+> 💡 Simply describe your app idea—like *"a fitness tracking app with workout plans and progress charts"*—and watch as AI Prototyper generates complete, interactive wireframes with multiple screens, navigation flows, and realistic UI components.
 
 ### Key Capabilities
 
--  **Text-to-Mockup Generation**: Describe your app in plain English, get professional wireframes
--  **Multi-Screen Flows**: Generates 3-8 interconnected screens with navigation paths
--  **AI-Powered Editing**: Select elements and describe changes in natural language
--  **Device-Accurate Frames**: iPhone 15 Pro dimensions with proper safe areas
--  **PDF Export**: Generate presentation-ready documentation
--  **Figma Integration**: Export JSON and import directly into Figma via plugin
+| Feature | Description |
+|---------|-------------|
+| **Text-to-Mockup** | Describe your app in plain English, get professional wireframes |
+| **Multi-Screen Flows** | Generates 3-8 interconnected screens with navigation paths |
+| **AI-Powered Editing** | Select elements and describe changes in natural language |
+| **Device Frames** | iPhone 15 Pro dimensions with proper safe areas |
+| **PDF Export** | Generate presentation-ready documentation |
+| **Figma Integration** | Export JSON and import directly into Figma via plugin |
 
 ---
 
